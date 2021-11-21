@@ -11,7 +11,25 @@ import (
 // RawGet return the corresponding Get response based on RawGetRequest's CF and Key fields
 func (server *Server) RawGet(_ context.Context, req *kvrpcpb.RawGetRequest) (*kvrpcpb.RawGetResponse, error) {
 	// Your Code Here (1).
-	return nil, nil
+	reader,err := server.storage.Reader(req.Context)
+	if err != nil{
+		return &kvrpcpb.RawGetResponse{},err
+	}
+
+	value, err := reader.GetCF(req.Cf,req.Key)
+	if err != nil{
+		return &kvrpcpb.RawGetResponse{},err
+	}
+
+	resp := &kvrpcpb.RawGetResponse{
+		Value : value,
+		NotFound: false,
+	}
+
+	if value == nil{
+		resp.NotFound = true
+	}
+	return resp, nil
 }
 
 // RawPut puts the target data into storage and returns the corresponding response
